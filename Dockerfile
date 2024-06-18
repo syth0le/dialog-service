@@ -7,4 +7,4 @@ RUN go mod download && go mod verify
 
 RUN CGO_ENABLED=0 go build -o /usr/local/bin/dialog-service cmd/dialog/main.go
 
-EXPOSE 8090-8091
+EXPOSE 8070-8071

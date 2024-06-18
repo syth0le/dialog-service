@@ -1,0 +1,22 @@
+logger:
+  level: "debug"
+  encoding: "console"
+  path: "stdout"
+
+public_server:
+  enable: true
+  endpoint: "localhost"
+  port: 8090
+
+admin_server:
+  enable: true
+  endpoint: "localhost"
+  port: 8091
+
+application:
+  app: "dialog-notifications"
+
+auth:
+  enable: true
+  conn:
+    endpoint: social-network:7070

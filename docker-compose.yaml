@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  backend:
+    container_name: "dialog-service"
+    build:
+      context: .
+    command: "/usr/local/bin/dialog-service --config=/usr/src/app/cmd/dialog/local_config.yaml"
+    restart: always
+    ports:
+      - "8090:8090"
+      - "8091:8091"
+    volumes:
+      - .:/usr/src/app
+    networks:
+      - dialog_net
+
+networks:
+  dialog_net:
+    driver: bridge

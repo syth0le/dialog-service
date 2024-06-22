@@ -2,6 +2,7 @@ package configuration
 
 import (
 	xclients "github.com/syth0le/gopnik/clients"
+	xstorage "github.com/syth0le/gopnik/db/postgres"
 	xlogger "github.com/syth0le/gopnik/logger"
 	xservers "github.com/syth0le/gopnik/servers"
 
@@ -9,11 +10,12 @@ import (
 )
 
 type Config struct {
-	Logger       xlogger.LoggerConfig  `yaml:"logger"`
-	Application  ApplicationConfig     `yaml:"application"`
-	PublicServer xservers.ServerConfig `yaml:"public_server"`
-	AdminServer  xservers.ServerConfig `yaml:"admin_server"`
-	AuthClient   AuthClientConfig      `yaml:"auth"`
+	Logger       xlogger.LoggerConfig   `yaml:"logger"`
+	Application  ApplicationConfig      `yaml:"application"`
+	PublicServer xservers.ServerConfig  `yaml:"public_server"`
+	AdminServer  xservers.ServerConfig  `yaml:"admin_server"`
+	Storage      xstorage.StorageConfig `yaml:"storage"`
+	AuthClient   AuthClientConfig       `yaml:"auth"`
 }
 
 func (c *Config) Validate() error {

@@ -40,7 +40,7 @@ func (c *ClientImpl) AuthenticationInterceptor(next http.Handler) http.Handler {
 
 		resp, err := c.client.ValidateToken(r.Context(), &inpb.ValidateTokenRequest{Token: authToken})
 		if err != nil {
-			c.writeError(w, fmt.Errorf("validate token: %w", err))
+			c.writeError(w, xerrors.WrapForbiddenError(fmt.Errorf("validate token: %w", err), "token validation failed"))
 			return
 		}
 
@@ -50,6 +50,27 @@ func (c *ClientImpl) AuthenticationInterceptor(next http.Handler) http.Handler {
 }
 
 func (c *ClientImpl) writeError(w http.ResponseWriter, err error) {
+	c.logger.Sugar().Warnf("http response error: %v", err)
+
+	w.Header().Set(headers.ContentType, "application/json")
+	errorResult, ok := xerrors.FromError(err)
+	if !ok {
+		c.logger.Sugar().Errorf("cannot write log message: %v", err)
+		return
+	}
+	w.WriteHeader(errorResult.StatusCode)
+	err = json.NewEncoder(w).Encode(
+		map[string]any{
+			"message": errorResult.Msg,
+			"code":    errorResult.StatusCode,
+		})
+
+	if err != nil {
+		http.Error(w, xerrors.InternalErrorMessage, http.StatusInternalServerError) // TODO: make error mapping
+	}
+}
+
+func (c *ClientImpl) writeGRPCError(w http.ResponseWriter, err error) {
 	c.logger.Sugar().Warnf("http response error: %v", err)
 
 	w.Header().Set(headers.ContentType, "application/json")

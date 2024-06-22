@@ -11,6 +11,9 @@ type Storage interface {
 }
 
 type DialogRepository interface {
-	GetDialog(ctx context.Context, dialogID *model.DialogID) ([]*model.Message, error) // TODO: pagination
-	CreateMessage(ctx context.Context, msg *model.Message) error
+	CreateDialog(ctx context.Context, id model.DialogID) error
+	GetDialogParticipants(ctx context.Context, dialogID model.DialogID) ([]*model.Participant, error)
+	AddParticipants(ctx context.Context, dialogID model.DialogID, participants []*model.Participant) error
+	GetDialogMessages(ctx context.Context, dialogID model.DialogID) ([]*model.Message, error) // TODO: pagination
+	CreateMessage(ctx context.Context, params *model.Message) error
 }

@@ -5,8 +5,9 @@ import (
 )
 
 const (
-	DialogTable  = "dialog_table"
-	MessageTable = "message_table"
+	DialogTable       = "dialog_table"
+	MessageTable      = "message_table"
+	ParticipantsTable = "participant_table"
 )
 
 const (
@@ -17,13 +18,11 @@ const (
 const (
 	fieldID = "id"
 
-	fieldFirstUserID  = "first_user_id"
-	fieldSecondUserID = "second_user_id"
+	fieldDialogId = "dialog_id"
+	fieldText     = "text"
+	fieldSenderId = "sender_id"
 
-	fieldDialogId    = "dialog_id"
-	fieldText        = "text"
-	fieldSenderId    = "sender_id"
-	fieldRecipientId = "recipient_id"
+	fieldUserID = "user_id"
 
 	fieldCreatedAt = "created_at"
 	fieldUpdatedAt = "updated_at"
@@ -31,10 +30,9 @@ const (
 )
 
 var (
-	dialogFields = []string{
-		fieldID, fieldFirstUserID, fieldSecondUserID, fieldCreatedAt,
-	}
-	messageFields = []string{fieldID, fieldDialogId, fieldSenderId, fieldRecipientId, fieldText, fieldCreatedAt, fieldUpdatedAt}
+	dialogFields       = []string{fieldID, fieldCreatedAt}
+	participantsFields = []string{fieldID, fieldDialogId, fieldUserID, fieldCreatedAt}
+	messageFields      = []string{fieldID, fieldDialogId, fieldSenderId, fieldText, fieldCreatedAt, fieldUpdatedAt}
 )
 
 func tableField(table, field string) string {

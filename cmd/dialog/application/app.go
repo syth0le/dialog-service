@@ -11,6 +11,8 @@ import (
 
 	"github.com/syth0le/dialog-service/cmd/dialog/configuration"
 	"github.com/syth0le/dialog-service/internal/clients/auth"
+	"github.com/syth0le/dialog-service/internal/service/dialog"
+	"github.com/syth0le/dialog-service/internal/storage/postgres"
 )
 
 type App struct {
@@ -48,17 +50,25 @@ func (a *App) Run() error {
 }
 
 type env struct {
-	authClient auth.Client
+	authClient    auth.Client
+	dialogService dialog.Service
 }
 
 func (a *App) constructEnv(ctx context.Context) (*env, error) {
+	postgresDB, err := postgres.NewStorage(a.Logger, a.Config.Storage)
+	if err != nil {
+		return nil, fmt.Errorf("new storage: %w", err)
+	}
+	a.Closer.Add(postgresDB.Close)
+
 	authClient, err := a.makeAuthClient(ctx, a.Config.AuthClient)
 	if err != nil {
 		return nil, fmt.Errorf("make auth client: %w", err)
 	}
 
 	return &env{
-		authClient: authClient,
+		authClient:    authClient,
+		dialogService: dialog.NewServiceImpl(a.Logger, postgresDB),
 	}, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	xclients "github.com/syth0le/gopnik/clients"
+	xstorage "github.com/syth0le/gopnik/db/postgres"
 	xlogger "github.com/syth0le/gopnik/logger"
 	xservers "github.com/syth0le/gopnik/servers"
 )
@@ -34,6 +35,17 @@ func NewDefaultConfig() *Config {
 			Enable:   false,
 			Endpoint: "",
 			Port:     0,
+		},
+		Storage: xstorage.StorageConfig{
+			EnableMock:            false,
+			Hosts:                 []string{},
+			Port:                  0,
+			Database:              "",
+			Username:              "",
+			Password:              "",
+			SSLMode:               "",
+			ConnectionAttempts:    0,
+			InitializationTimeout: 5 * time.Second,
 		},
 		AuthClient: AuthClientConfig{
 			Enable: false,

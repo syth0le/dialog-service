@@ -6,15 +6,26 @@ logger:
 public_server:
   enable: true
   endpoint: "localhost"
-  port: 8090
+  port: 8070
 
 admin_server:
   enable: true
   endpoint: "localhost"
-  port: 8091
+  port: 8071
 
 application:
   app: "dialog-notifications"
+
+storage:
+  hosts:
+    - "master-dialog"
+  #    - "slave"
+  port: 5432
+  database: "dialog-local"
+  username: "dialog-local-admin"
+  password: "eephayl3eaph8Xo"
+  ssl_mode: "disable"
+  connection_attempts: 3
 
 auth:
   enable: true

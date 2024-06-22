@@ -12,9 +12,79 @@ import (
 	"github.com/syth0le/dialog-service/internal/model"
 )
 
-func (s *Storage) GetDialog(ctx context.Context, dialogID *model.DialogID) ([]*model.Message, error) {
+func (s *Storage) CreateDialog(ctx context.Context, id model.DialogID) error {
+	now := time.Now().Truncate(time.Millisecond)
+
+	sql, args, err := sq.Insert(DialogTable).
+		Columns(dialogFields...).
+		Values(
+			id.String(), now,
+		).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return xerrors.WrapInternalError(fmt.Errorf("incorrect sql"))
+	}
+
+	_, err = s.Master().ExecContext(ctx, sql, args...)
+	if err != nil {
+		return xerrors.WrapSqlError(err)
+	}
+
+	return nil
+}
+
+func (s *Storage) GetDialogParticipants(ctx context.Context, dialogID model.DialogID) ([]*model.Participant, error) {
+	sql, args, err := sq.Select(participantsFields...).From(ParticipantsTable).
+		Where(sq.Eq{
+			fieldDialogId:  dialogID.String(),
+			fieldDeletedAt: nil,
+		}).
+		OrderBy(fieldCreatedAt).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, xerrors.WrapInternalError(fmt.Errorf("incorrect sql"))
+	}
+
+	var entities []participantEntity
+	err = sqlx.SelectContext(ctx, s.Slave(), &entities, sql, args...)
+	if err != nil {
+		return nil, xerrors.WrapSqlError(err)
+	}
+
+	return participantEntitiesToModels(entities), nil
+}
+
+func (s *Storage) AddParticipants(ctx context.Context, dialogID model.DialogID, participants []*model.Participant) error {
+	now := time.Now().Truncate(time.Millisecond)
+
+	query := sq.Insert(ParticipantsTable).
+		Columns(participantsFields...)
+
+	for _, participant := range participants {
+		query = query.Values(participant.ID, dialogID.String(), participant.UserID, now)
+	}
+
+	sql, args, err := query.
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return xerrors.WrapInternalError(fmt.Errorf("incorrect sql"))
+	}
+
+	_, err = s.Master().ExecContext(ctx, sql, args...)
+	if err != nil {
+		return xerrors.WrapSqlError(err)
+	}
+
+	return nil
+}
+
+func (s *Storage) GetDialogMessages(ctx context.Context, dialogID model.DialogID) ([]*model.Message, error) {
 	sql, args, err := sq.Select(messageFields...).From(MessageTable).
 		Where(sq.Eq{
+			fieldDialogId:  dialogID.String(),
 			fieldDeletedAt: nil,
 		}).
 		OrderBy(fieldCreatedAt).
@@ -33,37 +103,6 @@ func (s *Storage) GetDialog(ctx context.Context, dialogID *model.DialogID) ([]*m
 	return messageEntitiesToModels(entities), nil
 }
 
-// func (s *Storage) GetDialog(ctx context.Context, dialogID *model.DialogID) ([]*model.Message, error) {
-// 	sql, args, err := sq.Select(
-// 		tableField(MessageTable, fieldID),
-// 		tableField(MessageTable, fieldDialogId),
-// 		tableField(MessageTable, fieldSenderId),
-// 		tableField(MessageTable, fieldRecipientId),
-// 		tableField(MessageTable, fieldText),
-// 		tableField(MessageTable, fieldCreatedAt),
-// 		tableField(MessageTable, fieldUpdatedAt),
-// 	).From(MessageTable).
-// 		Join(
-// 			joinString(MessageTable, fieldDialogId, DialogTable, fieldID),
-// 		).
-// 		Where(sq.Eq{
-// 			tableField(MessageTable, fieldDeletedAt): nil,
-// 		}).
-// 		PlaceholderFormat(sq.Dollar).
-// 		ToSql()
-// 	if err != nil {
-// 		return nil, xerrors.WrapInternalError(fmt.Errorf("incorrect sql"))
-// 	}
-//
-// 	var entities []messageEntity
-// 	err = sqlx.SelectContext(ctx, s.Slave(), &entities, sql, args...)
-// 	if err != nil {
-// 		return nil, xerrors.WrapSqlError(err)
-// 	}
-//
-// 	return messageEntitiesToModels(entities), nil
-// }
-
 func (s *Storage) CreateMessage(ctx context.Context, params *model.Message) error {
 	err := params.Validate()
 	if err != nil {
@@ -75,8 +114,7 @@ func (s *Storage) CreateMessage(ctx context.Context, params *model.Message) erro
 	sql, args, err := sq.Insert(MessageTable).
 		Columns(messageFields...).
 		Values(
-			params.ID.String(), params.DialogID.String(), params.SenderID, params.RecipientID,
-			params.Text, now, now, nil,
+			params.ID.String(), params.DialogID.String(), params.SenderID, params.Text, now, now,
 		).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -92,8 +130,6 @@ func (s *Storage) CreateMessage(ctx context.Context, params *model.Message) erro
 	return nil
 }
 
-// todo: create dialog method
-
 type messageEntity struct {
 	ID          string `db:"id"`
 	DialogID    string `db:"dialog_id"`
@@ -106,7 +142,10 @@ type messageEntity struct {
 
 func messageEntityToModel(entity messageEntity) *model.Message {
 	return &model.Message{
-		ID: model.MessageID(entity.ID),
+		ID:       model.MessageID(entity.ID),
+		DialogID: model.DialogID(entity.DialogID),
+		SenderID: model.UserID(entity.SenderID),
+		Text:     entity.Text,
 	}
 }
 
@@ -114,6 +153,26 @@ func messageEntitiesToModels(entities []messageEntity) []*model.Message {
 	var friendModels []*model.Message
 	for _, entity := range entities {
 		friendModels = append(friendModels, messageEntityToModel(entity))
+	}
+	return friendModels
+}
+
+type participantEntity struct {
+	ID     string `db:"id"`
+	UserID string `db:"user_id"`
+}
+
+func participantEntityToModel(entity participantEntity) *model.Participant {
+	return &model.Participant{
+		ID:     model.ParticipantID(entity.ID),
+		UserID: model.UserID(entity.UserID),
+	}
+}
+
+func participantEntitiesToModels(entities []participantEntity) []*model.Participant {
+	var friendModels []*model.Participant
+	for _, entity := range entities {
+		friendModels = append(friendModels, participantEntityToModel(entity))
 	}
 	return friendModels
 }

@@ -12,9 +12,56 @@ services:
       - "8071:8071"
     volumes:
       - .:/usr/src/app
+    depends_on:
+      master-dialog:
+        condition: service_healthy
+      migrate-dialog:
+        condition: service_completed_successfully
     networks:
       - dialog_net
+      - social-network_social_network_net
+    external_links:
+      - backend:backend
+  master-dialog:
+    image: postgres:latest
+    container_name: "master-dialog"
+    env_file:
+      - .env
+    volumes:
+      - postgres-dialog-db-master:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=dialog-local
+      - POSTGRES_NAME=dialog-local
+      - POSTGRES_USER=dialog-local-admin
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "7432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: always
+    networks:
+      - dialog_net
+  migrate-dialog:
+    image: migrate/migrate
+    container_name: "migrate-dialog"
+    command: [ "-path", "/migrations", "-database",  "postgresql://dialog-local-admin:eephayl3eaph8Xo@master-dialog:5432/dialog-local?sslmode=disable", "up" ]
+    networks:
+      - dialog_net
+    depends_on:
+      master-dialog:
+        condition: service_healthy # needful setting which wait available postgres host
+    volumes:
+      - ./migrations:/migrations
+
+volumes:
+  postgres-dialog-db-master:
 
 networks:
   dialog_net:
     driver: bridge
+  social-network_social_network_net:
+    external: true

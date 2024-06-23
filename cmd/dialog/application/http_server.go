@@ -1,8 +1,6 @@
 package application
 
 import (
-	"net/http"
-
 	"github.com/go-chi/chi/v5"
 	xservers "github.com/syth0le/gopnik/servers"
 
@@ -19,9 +17,6 @@ func (a *App) newHTTPServer(env *env) *xservers.HTTPServerWrapper {
 
 func (a *App) publicMux(env *env) *chi.Mux {
 	mux := chi.NewMux()
-	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
-	})
 
 	handler := &publicapi.Handler{
 		Logger:        a.Logger,

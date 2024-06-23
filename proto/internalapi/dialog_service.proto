@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package social_network.internalapi;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/syth0le/social-network/proto/internalapi";
+
+service DialogService {
+  rpc CreateDialog(CreateDialogRequest) returns (CreateDialogResponse) {}
+  rpc CreateMessage(CreateMessageRequest) returns (google.protobuf.Empty) {}
+}
+
+message CreateDialogRequest {
+  string userId = 1;
+  repeated string participantsIds = 2;
+}
+
+message CreateDialogResponse {
+  string dialogId = 1;
+  repeated string participantsIds = 2;
+}
+
+message CreateMessageRequest {
+  string dialogId = 1;
+  string senderId = 2;
+  string text = 3;
+}
+
+message GetDialogMessagesRequest {
+  string userId = 1;
+  string dialogId = 2;
+}
+
+message Message {
+  string id = 1;
+  string dialogId = 2;
+  string senderId = 3;
+  string text = 4;
+}

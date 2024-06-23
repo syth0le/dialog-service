@@ -41,6 +41,12 @@ func (a *App) Run() error {
 		return fmt.Errorf("construct env: %w", err)
 	}
 
+	internalGRPCServer := a.newInternalGRPCServer(envStruct)
+	a.Closer.AddForce(internalGRPCServer.ForcefullyStop)
+	a.Closer.Add(internalGRPCServer.GracefullyStop)
+
+	a.Closer.Run(internalGRPCServer.Run)
+
 	httpServer := a.newHTTPServer(envStruct)
 	a.Closer.Add(httpServer.GracefulStop()...)
 

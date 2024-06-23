@@ -10,12 +10,13 @@ import (
 )
 
 type Config struct {
-	Logger       xlogger.LoggerConfig   `yaml:"logger"`
-	Application  ApplicationConfig      `yaml:"application"`
-	PublicServer xservers.ServerConfig  `yaml:"public_server"`
-	AdminServer  xservers.ServerConfig  `yaml:"admin_server"`
-	Storage      xstorage.StorageConfig `yaml:"storage"`
-	AuthClient   AuthClientConfig       `yaml:"auth"`
+	Logger             xlogger.LoggerConfig      `yaml:"logger"`
+	Application        ApplicationConfig         `yaml:"application"`
+	PublicServer       xservers.ServerConfig     `yaml:"public_server"`
+	AdminServer        xservers.ServerConfig     `yaml:"admin_server"`
+	InternalGRPCServer xservers.GRPCServerConfig `yaml:"internal_grpc_server"`
+	Storage            xstorage.StorageConfig    `yaml:"storage"`
+	AuthClient         AuthClientConfig          `yaml:"auth"`
 }
 
 func (c *Config) Validate() error {

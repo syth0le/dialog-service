@@ -36,6 +36,11 @@ func NewDefaultConfig() *Config {
 			Endpoint: "",
 			Port:     0,
 		},
+		InternalGRPCServer: xservers.GRPCServerConfig{
+			Port:             0,
+			EnableRecover:    false,
+			EnableReflection: false,
+		},
 		Storage: xstorage.StorageConfig{
 			EnableMock:            false,
 			Hosts:                 []string{},

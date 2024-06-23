@@ -20,8 +20,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	DialogService_CreateDialog_FullMethodName  = "/social_network.internalapi.DialogService/CreateDialog"
-	DialogService_CreateMessage_FullMethodName = "/social_network.internalapi.DialogService/CreateMessage"
+	DialogService_CreateDialog_FullMethodName      = "/social_network.internalapi.DialogService/CreateDialog"
+	DialogService_CreateMessage_FullMethodName     = "/social_network.internalapi.DialogService/CreateMessage"
+	DialogService_GetDialogMessages_FullMethodName = "/social_network.internalapi.DialogService/GetDialogMessages"
 )
 
 // DialogServiceClient is the client API for DialogService service.
@@ -30,6 +31,7 @@ const (
 type DialogServiceClient interface {
 	CreateDialog(ctx context.Context, in *CreateDialogRequest, opts ...grpc.CallOption) (*CreateDialogResponse, error)
 	CreateMessage(ctx context.Context, in *CreateMessageRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetDialogMessages(ctx context.Context, in *GetDialogMessagesRequest, opts ...grpc.CallOption) (*GetDialogMessagesResponse, error)
 }
 
 type dialogServiceClient struct {
@@ -58,12 +60,22 @@ func (c *dialogServiceClient) CreateMessage(ctx context.Context, in *CreateMessa
 	return out, nil
 }
 
+func (c *dialogServiceClient) GetDialogMessages(ctx context.Context, in *GetDialogMessagesRequest, opts ...grpc.CallOption) (*GetDialogMessagesResponse, error) {
+	out := new(GetDialogMessagesResponse)
+	err := c.cc.Invoke(ctx, DialogService_GetDialogMessages_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DialogServiceServer is the server API for DialogService service.
 // All implementations must embed UnimplementedDialogServiceServer
 // for forward compatibility
 type DialogServiceServer interface {
 	CreateDialog(context.Context, *CreateDialogRequest) (*CreateDialogResponse, error)
 	CreateMessage(context.Context, *CreateMessageRequest) (*emptypb.Empty, error)
+	GetDialogMessages(context.Context, *GetDialogMessagesRequest) (*GetDialogMessagesResponse, error)
 	mustEmbedUnimplementedDialogServiceServer()
 }
 
@@ -76,6 +88,9 @@ func (UnimplementedDialogServiceServer) CreateDialog(context.Context, *CreateDia
 }
 func (UnimplementedDialogServiceServer) CreateMessage(context.Context, *CreateMessageRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMessage not implemented")
+}
+func (UnimplementedDialogServiceServer) GetDialogMessages(context.Context, *GetDialogMessagesRequest) (*GetDialogMessagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDialogMessages not implemented")
 }
 func (UnimplementedDialogServiceServer) mustEmbedUnimplementedDialogServiceServer() {}
 
@@ -126,6 +141,24 @@ func _DialogService_CreateMessage_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DialogService_GetDialogMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDialogMessagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DialogServiceServer).GetDialogMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DialogService_GetDialogMessages_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DialogServiceServer).GetDialogMessages(ctx, req.(*GetDialogMessagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DialogService_ServiceDesc is the grpc.ServiceDesc for DialogService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -140,6 +173,10 @@ var DialogService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateMessage",
 			Handler:    _DialogService_CreateMessage_Handler,
+		},
+		{
+			MethodName: "GetDialogMessages",
+			Handler:    _DialogService_GetDialogMessages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

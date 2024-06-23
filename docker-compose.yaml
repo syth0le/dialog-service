@@ -10,6 +10,7 @@ services:
     ports:
       - "8070:8070"
       - "8071:8071"
+      - "7050:7050"
     volumes:
       - .:/usr/src/app
     depends_on:

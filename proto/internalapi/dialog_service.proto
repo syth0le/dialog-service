@@ -9,6 +9,7 @@ option go_package = "github.com/syth0le/social-network/proto/internalapi";
 service DialogService {
   rpc CreateDialog(CreateDialogRequest) returns (CreateDialogResponse) {}
   rpc CreateMessage(CreateMessageRequest) returns (google.protobuf.Empty) {}
+  rpc GetDialogMessages(GetDialogMessagesRequest) returns (GetDialogMessagesResponse) {}
 }
 
 message CreateDialogRequest {
@@ -37,4 +38,8 @@ message Message {
   string dialogId = 2;
   string senderId = 3;
   string text = 4;
+}
+
+message GetDialogMessagesResponse {
+  repeated Message messages = 1;
 }

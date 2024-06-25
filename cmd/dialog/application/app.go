@@ -11,6 +11,7 @@ import (
 
 	"github.com/syth0le/dialog-service/cmd/dialog/configuration"
 	"github.com/syth0le/dialog-service/internal/clients/auth"
+	"github.com/syth0le/dialog-service/internal/clients/counter"
 	"github.com/syth0le/dialog-service/internal/service/dialog"
 	"github.com/syth0le/dialog-service/internal/storage/postgres"
 )
@@ -72,9 +73,14 @@ func (a *App) constructEnv(ctx context.Context) (*env, error) {
 		return nil, fmt.Errorf("make auth client: %w", err)
 	}
 
+	counterClient, err := a.makeCounterClient(ctx, a.Config.CounterClient)
+	if err != nil {
+		return nil, fmt.Errorf("make dialog client: %w", err)
+	}
+
 	return &env{
 		authClient:    authClient,
-		dialogService: dialog.NewServiceImpl(a.Logger, postgresDB),
+		dialogService: dialog.NewServiceImpl(a.Logger, postgresDB, counterClient),
 	}, nil
 }
 
@@ -91,4 +97,19 @@ func (a *App) makeAuthClient(ctx context.Context, cfg configuration.AuthClientCo
 	a.Closer.Add(connection.Close)
 
 	return auth.NewAuthImpl(a.Logger, connection), nil
+}
+
+func (a *App) makeCounterClient(ctx context.Context, cfg configuration.CounterClientConfig) (counter.Client, error) {
+	if !cfg.Enable {
+		return counter.NewClientMock(a.Logger), nil
+	}
+
+	connection, err := xclients.NewGRPCClientConn(ctx, cfg.Conn)
+	if err != nil {
+		return nil, fmt.Errorf("new grpc conn: %w", err)
+	}
+
+	a.Closer.Add(connection.Close)
+
+	return counter.NewClientImpl(a.Logger, connection), nil
 }

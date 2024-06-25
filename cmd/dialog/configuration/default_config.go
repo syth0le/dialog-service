@@ -63,5 +63,16 @@ func NewDefaultConfig() *Config {
 				EnableCompressor:      false,
 			},
 		},
+		CounterClient: CounterClientConfig{
+			Enable: false,
+			Conn: xclients.GRPCClientConnConfig{
+				Endpoint:              "",
+				UserAgent:             defaultAppName,
+				MaxRetries:            0,
+				TimeoutBetweenRetries: 0,
+				InitTimeout:           0,
+				EnableCompressor:      false,
+			},
+		},
 	}
 }

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"strings"
 )
 
 const (
@@ -33,6 +34,8 @@ var (
 	dialogFields       = []string{fieldID, fieldCreatedAt}
 	participantsFields = []string{fieldID, fieldDialogId, fieldUserID, fieldCreatedAt}
 	messageFields      = []string{fieldID, fieldDialogId, fieldSenderId, fieldText, fieldCreatedAt, fieldUpdatedAt}
+
+	returningMessage = returning + strings.Join(messageFields, separator)
 )
 
 func tableField(table, field string) string {

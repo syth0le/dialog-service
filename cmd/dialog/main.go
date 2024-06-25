@@ -55,6 +55,8 @@ func constructLogger(cfg xlogger.LoggerConfig) (*zap.Logger, error) {
 		return nil, fmt.Errorf("unexpected environment for logger: %w", err)
 	}
 
+	logger.With()
+
 	defer logger.Sync()
 	return logger, nil
 }

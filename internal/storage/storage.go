@@ -15,5 +15,9 @@ type DialogRepository interface {
 	GetDialogParticipants(ctx context.Context, dialogID model.DialogID) ([]*model.Participant, error)
 	AddParticipants(ctx context.Context, dialogID model.DialogID, participants []*model.Participant) error
 	GetDialogMessages(ctx context.Context, dialogID model.DialogID) ([]*model.Message, error) // TODO: pagination
-	CreateMessage(ctx context.Context, params *model.Message) error
+	CreateMessage(ctx context.Context, params *model.Message) (*model.Message, error)
+
+	DeleteParticipants(ctx context.Context, participants []*model.Participant) error
+	DeleteDialog(ctx context.Context, participants model.DialogID) error
+	DeleteMessage(ctx context.Context, params model.MessageID) error
 }

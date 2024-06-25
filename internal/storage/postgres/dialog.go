@@ -103,10 +103,10 @@ func (s *Storage) GetDialogMessages(ctx context.Context, dialogID model.DialogID
 	return messageEntitiesToModels(entities), nil
 }
 
-func (s *Storage) CreateMessage(ctx context.Context, params *model.Message) error {
+func (s *Storage) CreateMessage(ctx context.Context, params *model.Message) (*model.Message, error) {
 	err := params.Validate()
 	if err != nil {
-		return fmt.Errorf("params validate: %w", err)
+		return nil, fmt.Errorf("params validate: %w", err)
 	}
 
 	now := time.Now().Truncate(time.Millisecond)
@@ -115,6 +115,70 @@ func (s *Storage) CreateMessage(ctx context.Context, params *model.Message) erro
 		Columns(messageFields...).
 		Values(
 			params.ID.String(), params.DialogID.String(), params.SenderID, params.Text, now, now,
+		).
+		PlaceholderFormat(sq.Dollar).
+		Suffix(returningMessage).
+		ToSql()
+	if err != nil {
+		return nil, xerrors.WrapInternalError(fmt.Errorf("incorrect sql"))
+	}
+
+	var entity messageEntity
+	err = sqlx.GetContext(ctx, s.Master(), &entity, sql, args...)
+	if err != nil {
+		return nil, xerrors.WrapSqlError(err)
+	}
+
+	return messageEntityToModel(entity), nil
+}
+
+func (s *Storage) DeleteParticipants(ctx context.Context, participants []*model.Participant) error {
+	ids := make([]string, len(participants))
+	for idx, val := range participants {
+		ids[idx] = val.ID.String()
+	}
+
+	sql, args, err := sq.Delete(ParticipantsTable).
+		Where(
+			sq.Eq{fieldID: ids},
+		).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return xerrors.WrapInternalError(fmt.Errorf("incorrect sql"))
+	}
+
+	_, err = s.Master().ExecContext(ctx, sql, args...)
+	if err != nil {
+		return xerrors.WrapSqlError(err)
+	}
+
+	return nil
+}
+
+func (s *Storage) DeleteDialog(ctx context.Context, dialogID model.DialogID) error {
+	sql, args, err := sq.Delete(DialogTable).
+		Where(
+			sq.Eq{fieldID: dialogID.String()},
+		).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return xerrors.WrapInternalError(fmt.Errorf("incorrect sql"))
+	}
+
+	_, err = s.Master().ExecContext(ctx, sql, args...)
+	if err != nil {
+		return xerrors.WrapSqlError(err)
+	}
+
+	return nil
+}
+
+func (s *Storage) DeleteMessage(ctx context.Context, messageID model.MessageID) error {
+	sql, args, err := sq.Delete(MessageTable).
+		Where(
+			sq.Eq{fieldID: messageID.String()},
 		).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

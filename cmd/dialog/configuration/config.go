@@ -17,6 +17,7 @@ type Config struct {
 	InternalGRPCServer xservers.GRPCServerConfig `yaml:"internal_grpc_server"`
 	Storage            xstorage.StorageConfig    `yaml:"storage"`
 	AuthClient         AuthClientConfig          `yaml:"auth"`
+	CounterClient      CounterClientConfig       `yaml:"counter"`
 }
 
 func (c *Config) Validate() error {
@@ -39,6 +40,19 @@ type AuthClientConfig struct {
 }
 
 func (c *AuthClientConfig) Validate() error {
+	if !c.Enable {
+		return nil
+	}
+
+	return nil // todo
+}
+
+type CounterClientConfig struct {
+	Enable bool                          `yaml:"enable"`
+	Conn   xclients.GRPCClientConnConfig `yaml:"conn"`
+}
+
+func (c *CounterClientConfig) Validate() error {
 	if !c.Enable {
 		return nil
 	}

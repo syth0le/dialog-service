@@ -21,6 +21,7 @@ services:
     networks:
       - dialog_net
       - social-network_social_network_net
+      - counter-service_counter_net
     external_links:
       - backend:backend
   master-dialog:
@@ -65,4 +66,6 @@ networks:
   dialog_net:
     driver: bridge
   social-network_social_network_net:
+    external: true
+  counter-service_counter_net:
     external: true

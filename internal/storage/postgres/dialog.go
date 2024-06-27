@@ -222,8 +222,10 @@ func messageEntitiesToModels(entities []messageEntity) []*model.Message {
 }
 
 type participantEntity struct {
-	ID     string `db:"id"`
-	UserID string `db:"user_id"`
+	ID        string `db:"id"`
+	DialogID  string `db:"dialog_id"`
+	UserID    string `db:"user_id"`
+	CreatedAt string `db:"created_at"`
 }
 
 func participantEntityToModel(entity participantEntity) *model.Participant {

@@ -37,7 +37,7 @@ auth:
   conn:
     endpoint: social-network:7070
 
-counter-service:
+counter:
   enable: true
   conn:
-    endpoint: dialog-service:7050
+    endpoint: counter-service:7040

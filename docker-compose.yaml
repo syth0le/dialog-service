@@ -59,8 +59,60 @@ services:
     volumes:
       - ./migrations:/migrations
 
+
+  #  cadvisor:
+  #    image: gcr.io/cadvisor/cadvisor:v0.47.1
+  #    container_name: counter-cadvisor
+  #    volumes:
+  #      - /:/rootfs:ro
+  #      - /var/run:/var/run:ro
+  #      - /sys:/sys:ro
+  #      - /var/lib/docker:/var/lib/docker:ro
+  #    command:
+  #      - --docker_only=true
+  #    depends_on:
+  #      - pg-coordinator
+
+  prometheus:
+    image: prom/prometheus:v2.45.6
+    container_name: counter-prometheus
+    ports:
+      - "9090:9090"
+#    tmpfs:
+#      - /prometheus:mode=1755,size=1g,uid=65534,gid=65534
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./infra/prometheus/alerts.yml:/etc/prometheus/alerts.yml
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      - backend
+    networks:
+      - dialog_net
+
+  grafana:
+    image: grafana/grafana:9.5.20
+    container_name: counter-grafana
+    ports:
+      - "3333:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+      - grafana_data:/etc/grafana/provisioning/datasources/
+      - grafana_data:/etc/grafana/provisioning/dashboards/
+    depends_on:
+      - prometheus
+    networks:
+      - dialog_net
+
 volumes:
   postgres-dialog-db-master:
+  prometheus_data:
+  grafana_data:
 
 networks:
   dialog_net:

@@ -38,6 +38,6 @@ auth:
     endpoint: social-network:7070
 
 counter:
-  enable: true
+  enable: false
   conn:
     endpoint: counter-service:7040

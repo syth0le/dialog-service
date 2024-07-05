@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"syscall"
 
+	"github.com/prometheus/client_golang/prometheus"
 	xclients "github.com/syth0le/gopnik/clients"
 	xcloser "github.com/syth0le/gopnik/closer"
 	"go.uber.org/zap"
@@ -17,16 +18,18 @@ import (
 )
 
 type App struct {
-	Config *configuration.Config
-	Logger *zap.Logger
-	Closer *xcloser.Closer
+	Config   *configuration.Config
+	Logger   *zap.Logger
+	Closer   *xcloser.Closer
+	Registry *prometheus.Registry
 }
 
 func New(cfg *configuration.Config, logger *zap.Logger) *App {
 	return &App{
-		Config: cfg,
-		Logger: logger,
-		Closer: xcloser.NewCloser(logger, cfg.Application.GracefulShutdownTimeout, cfg.Application.ForceShutdownTimeout, syscall.SIGINT, syscall.SIGTERM),
+		Config:   cfg,
+		Logger:   logger,
+		Closer:   xcloser.NewCloser(logger, cfg.Application.GracefulShutdownTimeout, cfg.Application.ForceShutdownTimeout, syscall.SIGINT, syscall.SIGTERM),
+		Registry: prometheus.NewRegistry(),
 	}
 }
 

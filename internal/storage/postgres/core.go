@@ -12,15 +12,19 @@ import (
 
 type Storage struct {
 	storage *xstorage.PGStorage
+	hosts   []string
+	salt    string
 }
 
-func NewStorage(logger *zap.Logger, config xstorage.StorageConfig) (*Storage, error) {
+func NewStorage(logger *zap.Logger, config xstorage.StorageConfig, salt string) (*Storage, error) {
 	postgresStorage, err := xstorage.NewPGStorage(logger, config)
 	if err != nil {
 		return nil, fmt.Errorf("new pg storage: %w", err)
 	}
 	return &Storage{
 		storage: postgresStorage,
+		hosts:   config.Hosts,
+		salt:    salt,
 	}, nil
 }
 
@@ -42,4 +46,12 @@ func (s *Storage) Slave() sqlx.ExtContext {
 
 func (s *Storage) now() {
 	// TODO: implement
+}
+
+func (s *Storage) Hosts() []string {
+	return s.hosts
+}
+
+func (s *Storage) Salt() string {
+	return s.salt
 }

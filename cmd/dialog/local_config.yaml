@@ -32,6 +32,17 @@ storage:
   ssl_mode: "disable"
   connection_attempts: 3
 
+second_storage:
+  hosts:
+    - "master-second-shard-dialog"
+  #    - "slave"
+  port: 5432
+  database: "dialog-local"
+  username: "dialog-local-admin"
+  password: "eephayl3eaph8Xo"
+  ssl_mode: "disable"
+  connection_attempts: 3
+
 auth:
   enable: true
   conn:

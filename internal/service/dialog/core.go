@@ -90,12 +90,12 @@ func (s *ServiceImpl) CreateMessage(ctx context.Context, params *CreateMessagePa
 
 	participants, err := s.storage.Dialog().GetDialogParticipants(ctx, params.DialogID)
 	if err != nil {
-		return s.compensationCreateMessageOperation(ctx, message.ID, fmt.Errorf("get dialog participants: %w", err))
+		return s.compensationCreateMessageOperation(ctx, message.DialogID, message.ID, fmt.Errorf("get dialog participants: %w", err))
 	}
 
 	err = s.counterClient.IncreaseDialogCounters(ctx, params.DialogID, params.SenderID, participants)
 	if err != nil {
-		return s.compensationCreateMessageOperation(ctx, message.ID, fmt.Errorf("increase dialog counters: %w", err))
+		return s.compensationCreateMessageOperation(ctx, message.DialogID, message.ID, fmt.Errorf("increase dialog counters: %w", err))
 	}
 
 	return nil
@@ -124,7 +124,7 @@ func (s *ServiceImpl) GetDialogMessages(ctx context.Context, params *GetDialogMe
 func (s *ServiceImpl) compensationCreateDialogOperation(ctx context.Context, dialogID model.DialogID, participants []*model.Participant, originErr error) error {
 	// умышленно отказался от каскадного удаления в sql, потому что это плохая стратегия поведения при наличии пользовательских данных
 	// для уверенности можно явно запретить удалять родителя ON DELETE RESTRICT, пока есть потомки
-	err := s.storage.Dialog().DeleteParticipants(ctx, participants)
+	err := s.storage.Dialog().DeleteParticipants(ctx, dialogID, participants)
 	if err != nil {
 		return fmt.Errorf("origin %w: delete participants: %w", originErr, err)
 	}
@@ -137,8 +137,8 @@ func (s *ServiceImpl) compensationCreateDialogOperation(ctx context.Context, dia
 	return originErr
 }
 
-func (s *ServiceImpl) compensationCreateMessageOperation(ctx context.Context, messageID model.MessageID, originErr error) error {
-	err := s.storage.Dialog().DeleteMessage(ctx, messageID)
+func (s *ServiceImpl) compensationCreateMessageOperation(ctx context.Context, dialogID model.DialogID, messageID model.MessageID, originErr error) error {
+	err := s.storage.Dialog().DeleteMessage(ctx, dialogID, messageID)
 	if err != nil {
 		return fmt.Errorf("origin %w: delete message: %w", originErr, err)
 	}

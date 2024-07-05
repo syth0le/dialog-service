@@ -15,6 +15,7 @@ import (
 	"github.com/syth0le/dialog-service/internal/clients/counter"
 	"github.com/syth0le/dialog-service/internal/service/dialog"
 	"github.com/syth0le/dialog-service/internal/storage/postgres"
+	"github.com/syth0le/dialog-service/internal/storage/sharder"
 )
 
 type App struct {
@@ -65,11 +66,21 @@ type env struct {
 }
 
 func (a *App) constructEnv(ctx context.Context) (*env, error) {
-	postgresDB, err := postgres.NewStorage(a.Logger, a.Config.Storage)
+	consistentSharder := sharder.NewConsistentSharder(a.Logger)
+
+	firstDBShard, err := postgres.NewStorage(a.Logger, a.Config.Storage, "first_shard")
 	if err != nil {
-		return nil, fmt.Errorf("new storage: %w", err)
+		return nil, fmt.Errorf("new storage first shard: %w", err)
 	}
-	a.Closer.Add(postgresDB.Close)
+	a.Closer.Add(firstDBShard.Close)
+	consistentSharder.Add(firstDBShard)
+
+	secondDBShard, err := postgres.NewStorage(a.Logger, a.Config.SecondStorage, "second_shard")
+	if err != nil {
+		return nil, fmt.Errorf("new storage second shard: %w", err)
+	}
+	a.Closer.Add(secondDBShard.Close)
+	consistentSharder.Add(secondDBShard)
 
 	authClient, err := a.makeAuthClient(ctx, a.Config.AuthClient)
 	if err != nil {
@@ -83,7 +94,7 @@ func (a *App) constructEnv(ctx context.Context) (*env, error) {
 
 	return &env{
 		authClient:    authClient,
-		dialogService: dialog.NewServiceImpl(a.Logger, postgresDB, counterClient),
+		dialogService: dialog.NewServiceImpl(a.Logger, consistentSharder, counterClient),
 	}, nil
 }
 

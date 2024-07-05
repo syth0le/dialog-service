@@ -52,6 +52,17 @@ func NewDefaultConfig() *Config {
 			ConnectionAttempts:    0,
 			InitializationTimeout: 5 * time.Second,
 		},
+		SecondStorage: xstorage.StorageConfig{
+			EnableMock:            false,
+			Hosts:                 []string{},
+			Port:                  0,
+			Database:              "",
+			Username:              "",
+			Password:              "",
+			SSLMode:               "",
+			ConnectionAttempts:    0,
+			InitializationTimeout: 5 * time.Second,
+		},
 		AuthClient: AuthClientConfig{
 			Enable: false,
 			Conn: xclients.GRPCClientConnConfig{

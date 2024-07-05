@@ -132,7 +132,7 @@ func (s *Storage) CreateMessage(ctx context.Context, params *model.Message) (*mo
 	return messageEntityToModel(entity), nil
 }
 
-func (s *Storage) DeleteParticipants(ctx context.Context, participants []*model.Participant) error {
+func (s *Storage) DeleteParticipants(ctx context.Context, dialogID model.DialogID, participants []*model.Participant) error {
 	ids := make([]string, len(participants))
 	for idx, val := range participants {
 		ids[idx] = val.ID.String()
@@ -140,7 +140,10 @@ func (s *Storage) DeleteParticipants(ctx context.Context, participants []*model.
 
 	sql, args, err := sq.Delete(ParticipantsTable).
 		Where(
-			sq.Eq{fieldID: ids},
+			sq.Eq{
+				fieldID:       ids,
+				fieldDialogId: dialogID,
+			},
 		).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -175,10 +178,13 @@ func (s *Storage) DeleteDialog(ctx context.Context, dialogID model.DialogID) err
 	return nil
 }
 
-func (s *Storage) DeleteMessage(ctx context.Context, messageID model.MessageID) error {
+func (s *Storage) DeleteMessage(ctx context.Context, dialogID model.DialogID, messageID model.MessageID) error {
 	sql, args, err := sq.Delete(MessageTable).
 		Where(
-			sq.Eq{fieldID: messageID.String()},
+			sq.Eq{
+				fieldID:       messageID.String(),
+				fieldDialogId: dialogID,
+			},
 		).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

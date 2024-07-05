@@ -16,6 +16,7 @@ type Config struct {
 	AdminServer        xservers.ServerConfig     `yaml:"admin_server"`
 	InternalGRPCServer xservers.GRPCServerConfig `yaml:"internal_grpc_server"`
 	Storage            xstorage.StorageConfig    `yaml:"storage"`
+	SecondStorage      xstorage.StorageConfig    `yaml:"second_storage"`
 	AuthClient         AuthClientConfig          `yaml:"auth"`
 	CounterClient      CounterClientConfig       `yaml:"counter"`
 }

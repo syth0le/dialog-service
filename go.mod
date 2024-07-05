@@ -15,6 +15,7 @@ require (
 	github.com/syth0le/gopnik v0.0.0-20240616213023-1c20ad938bed
 	github.com/syth0le/social-network v0.0.0-20240617122936-fd5ae9f876ec
 	go.uber.org/zap v1.27.0
+	golang.org/x/crypto v0.21.0
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/validator.v2 v2.0.1
@@ -36,7 +37,6 @@ require (
 	github.com/prometheus/common v0.48.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect

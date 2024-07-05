@@ -8,6 +8,8 @@ import (
 
 type Storage interface {
 	Dialog() DialogRepository
+	Hosts() []string
+	Salt() string
 }
 
 type DialogRepository interface {
@@ -17,7 +19,7 @@ type DialogRepository interface {
 	GetDialogMessages(ctx context.Context, dialogID model.DialogID) ([]*model.Message, error) // TODO: pagination
 	CreateMessage(ctx context.Context, params *model.Message) (*model.Message, error)
 
-	DeleteParticipants(ctx context.Context, participants []*model.Participant) error
-	DeleteDialog(ctx context.Context, participants model.DialogID) error
-	DeleteMessage(ctx context.Context, params model.MessageID) error
+	DeleteParticipants(ctx context.Context, dialogID model.DialogID, participants []*model.Participant) error
+	DeleteDialog(ctx context.Context, dialogID model.DialogID) error
+	DeleteMessage(ctx context.Context, dialogID model.DialogID, messageID model.MessageID) error
 }
